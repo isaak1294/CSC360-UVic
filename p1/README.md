@@ -14,8 +14,8 @@ The program operates like a standard Linux command line. You can execute files f
 
 This program supports the following commands:
 
-**ls:** provides a list of files in the current directory.
-**cd:** change directory to specified path from current directory.
-**pwd:** Prints the working directory.
-**bg <args>:** Runs processes in the background.
-**bglist:** Lists processes that are currently running in the background.
+- **ls:** provides a list of files in the current directory.
+- **cd:** change directory to specified path from current directory.
+- **pwd:** Prints the working directory.
+- **bg <args>:** Runs processes in the background.
+- **bglist:** Lists processes that are currently running in the background.
