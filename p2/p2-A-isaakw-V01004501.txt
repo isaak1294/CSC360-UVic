@@ -1,0 +1,84 @@
+How many threads are you going to use? Specify the work that you intend each thread to perform:
+
+I am going to use one thread per train. I believe that this solution should be sufficient unless the number of trains
+becomes extremely high and it will keep things simple.
+
+
+Do the threads work independently? Or, is there an overall “controller” thread?
+
+Threads will work independently. I believe this is the simplest solution. They will share some variables and mutexes
+will guard them from being modified by multiple threads at once.
+
+
+How many mutexes are you going to use? Specify the operation that each mutex will guard.
+
+I will use 3 mutexes:
+
+1. Track access mutex:
+
+    - this mutex will ensure that only one train is accessing the track at a time, the operation it will block is
+    checking and crossing the track
+
+2. Station mutex:
+
+    - This mutex will ensure that only one train is being added to the station at a time. The operation it will block
+    is adding and removing trains from a station.
+
+3. Shared state mutex:
+
+    - this mutex will guard all of the shared state variables, which will include:
+        - Direction (direction of last train)
+        - Consecutive count (number of consecutive trains from one direction)
+        - Opposite direction (whether there is a train waiting in the opposite direction)
+
+
+Will the main thread be idle? If not, what will it be doing?
+
+No, the main thread will not be idle. The main thread is responsible for thread management. Specifically, this includes
+initializing the system, creating and dispatching threads, and joining threads when the corresponding train has crossed the tracks.
+
+
+How are you going to represent stations (which are collections of loaded trains ready to depart)? That is,
+what type of data structure will you use?
+
+I will use a list to represent stations. I will simply define a train as a struct, and a station as a struct wich contains a
+list of trains along with an integer variable "count" to represent the number of trains remaining
+
+
+How are you going to ensure that data structures in your program will not be modified concurrently?
+How many convars are you going to use? For each convar: 
+- Describe the condition that the convar will represent.
+- Which mutex is associated with the convar? Why?
+- What operation should be performed once pthread_cond_wait() has been unblocked and re-acquired the mutex?
+
+I will use 2 convars:
+
+1. Track availability convar:
+
+    Condition represented: Whether the track is available to cross.
+
+    Associated mutex: Track access mutex.
+
+    Unblock operation: Once the operation is unblocked (indicating that the track is available), the next train will
+    start crossing the tracks.
+
+2. Starvation rule convar:
+
+    Condition represented: Whether 2 trains have consecutively crossed from the same direction.
+
+    Associated mutex: Shared state mutex.
+
+    Unblock operation: Once the operation is unblocked, the direction state variable will be updated and if a train from that direction
+    is available it will be sent across the tracks. Otherwise the direction will be switched back and thus the counter will be reset.
+
+
+In 15 lines or less, briefly sketch the overall algorithm you will use:
+
+If train is loaded, lock station mutex, add train to station list, unlock station mutex
+If train is ready to depart, lock station mutex, check if track free or starvation rule applies, unlock station mutex
+If track is busy, wait on track convar
+If two trains have come from the same direction in a row, check for opposite direction train, wait if necessary
+If train crossing, lock track mutex, train crosses, unlock track mutex
+If train crossed, signal track availability for next train to cross
+Update state variables
+Loop through process.
