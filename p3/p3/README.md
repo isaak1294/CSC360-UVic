@@ -1,5 +1,7 @@
 # p3
 
+This project is a series of programs that can analyze and modify the contents of a .img file containing a FAT file system.
+
 #### Diskinfo:
 
 type "./diskinfo filename" where filename is a valid img file. Returns information about the disk image
